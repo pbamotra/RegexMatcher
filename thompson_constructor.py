@@ -32,7 +32,7 @@ def ch(character):
     return Automata(startState, endState)
 
 
-def kl(automata):
+def _kl(automata):
     """
     Using Thompson's construction we define NFA for Kleene star.
 
@@ -172,6 +172,10 @@ def dispatcher(o):
         return strSeqToAutomata(o)
 
     raise ValueError("Invalid regular expression component")
+
+
+def kl(regex):
+    return _kl(dispatcher(regex))
 
 
 def alt(regexs):
