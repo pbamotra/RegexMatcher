@@ -99,8 +99,8 @@ class State(object):
 
 			epsMoves = self.getEpsReachabilityForStates(charMoves)
 
-		for st in epsMoves:
-			if st.isFinalState: return True
+		for state in epsMoves:
+			if state.isFinalState: return True
 
 		return False
 
