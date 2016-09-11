@@ -22,19 +22,20 @@ def run_experiment(pattern, regex):
     """
 
     candidates = [ 
-                  "",               # empty string
-                  "ab",             # 'a' followed by 'b' 
-                  "bb",             # 'b' followed by 'b' 
-                  "a",              # only character 'a' 
-                  "abbb",           # 'ab' followed by 'bb'
-                  "bbab",           # 'bb' followed by 'ab'
-                  "baba",           # 'ba' followed by 'ba'
-                  "bbbbbbababbbbb", # thrice 'bb' -> twice 'ab' -> twice 'bb'
-                  "bc",             # 'b' followed by 'c'
-                  "abbc"            # 'ab' followed by 'bc'
+                  "",                                   # empty string
+                  "ab",                                 # 'a' followed by 'b'
+                  "bb",                                 # 'b' followed by 'b'
+                  "a",                                  # only character 'a'
+                  "abbb",                               # 'ab' followed by 'bb'
+                  "bbab",                               # 'bb' followed by 'ab'
+                  "baba",                               # 'ba' followed by 'ba'
+                  "bbbbbbababbbbb",                     # thrice 'bb' -> twice 'ab' -> twice 'bb'
+                  "bc",                                 # 'b' followed by 'c'
+                  "abbc",                               # 'ab' followed by 'bc'
+                  "aaa" * 5000                          # lot of 'a'
                 ]           
     for candidate in candidates:
-        print candidate, pattern.matches(candidate)
+        #print candidate, pattern.matches(candidate)
         truth = re.compile(regex).match(candidate) is not None
         assert pattern.matches(candidate) == truth
     print
@@ -71,6 +72,16 @@ def main():
     pattern = seq(["a", alt(["b" * 3 + 'b' * i for i in xrange(4 - 3)])])
     print_msg(message=msg)
     run_experiment(pattern, regex="ab{3,4}")
+
+    # - custom -
+    msg = 'Regex: (a|aa)+'
+    a_or_aa = alt(["a", "aa"])
+    zero_or_more_times = kl(a_or_aa)
+    pattern = seq([a_or_aa, zero_or_more_times])
+
+    print_msg(message=msg)
+    run_experiment(pattern, regex="(a|aa)+$")
+
 
 if __name__ == '__main__':
     main()

@@ -76,10 +76,95 @@ class State(object):
 		Returns:
 			True if string matches pattern (NFA), False otherwise
 		"""
+		return self.simulateNfa(string)
 
-		return self.simulateNfa(string, set())
+	def simulateNfa(self, string):
+		"""
+		Simulate NFA one character at a time from the string.
 
-	def simulateNfa(self, string, processedStates):
+		Params:
+		    string: input string to be matched against the NFA for regex
+
+		Returns:
+			Boolean: True if match is successful, false otherwise
+		"""
+		epsMoves = set(self.getEpsReachability())
+
+		for ch in string:
+			charMoves = set()
+			for state in epsMoves:
+				if state.isFinalState: continue
+				for move in state.getTransitionsForChar(ch):
+					charMoves.add(move)
+
+			epsMoves = self.getEpsReachabilityForStates(charMoves)
+
+		for st in epsMoves:
+			if st.isFinalState: return True
+
+		return False
+
+
+	def getTransitionsForChar(self, ch):
+		"""
+		Get character transitions from this state using ch
+
+		Params:
+		    ch - character for which transitions are to be retrieved
+		Returns:
+			list of character transitions from this state using ch
+		"""
+		if not self.isSupportedChar(ch): return []
+		return self.charTransitions[ord(ch)]
+
+	def getEpsReachability(self, visited=None):
+		"""
+		Searching epsilon reachable states from self.
+
+		Params:
+			visited - set of visited states
+
+		Returns:
+			set of epsilon reachable states from self
+		"""
+		stack = [self, ]
+		if visited is None: visited = set()
+		skip = True
+
+		while stack:
+			curr = stack.pop()
+
+			if curr not in visited:
+				# In the beginning, we don't include the state itself, however it
+				# maybe reachable by kleene loop
+				if not skip:
+					visited.add(curr)
+				skip = False
+				stack.extend([state for state in curr.epsilonTransitions if state not in visited])
+
+		return visited
+
+	@staticmethod
+	def getEpsReachabilityForStates(sources, visited=None):
+		"""
+		Searching epsilon reachable states from multiple sources.
+
+		Params:
+			sources - states from which epsilon transitions start
+			visited - set of visited states
+
+		Returns:
+		    set of epsilon reachable states from source states
+		"""
+		if visited is None: visited = set()
+
+		for state in sources:
+			if state not in visited:
+				state.getEpsReachability(visited)
+
+		return visited
+
+	def simulateNfaBacktrack(self, string, processedStates):
 		"""
 		Simulate NFA one character at a time from the string.
 
@@ -123,3 +208,18 @@ class State(object):
 				if epsilonState.simulateNfa('', processedStates): return True
 
 		return False
+
+	def __str__(self):
+		result = str(id(self))
+		result += ' is final ' if self.isFinalState else ' not final '
+		result += 'on eps goes to ' if self.epsilonTransitions else ''
+		result += ','.join(str(id(move)) for move in self.epsilonTransitions)
+		skip = False
+		for ch in xrange(self._charRangeMax):
+			if self.charTransitions[ch]:
+				if not skip:
+					result += ', has char transitions '
+					skip = True
+				result += chr(ch) + ' goes to ' + ','.join(str(id(move)) for move in self.charTransitions[ch])
+
+		return result
