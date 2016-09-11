@@ -88,7 +88,7 @@ class State(object):
 		Returns:
 			Boolean: True if match is successful, false otherwise
 		"""
-		epsMoves = set(self.getEpsReachability())
+		epsMoves = self.getEpsReachability()
 
 		for ch in string:
 			charMoves = set()
