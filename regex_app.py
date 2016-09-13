@@ -36,13 +36,13 @@ def run_experiment(pattern, regex):
                   "abbbbbbc",                           # 'ab' -> 'bb' * 2 -> 'bc'
                   "aaaaaaaaaaaaaa",                     # 14 'a'
                   "aaaaaaaaaaaaaa" * 70                 # 14 * 70 'a'
+
                 ]           
     for candidate in candidates:
-        # print candidate, pattern.matches(candidate)
+        #print candidate, pattern.matches(candidate)
         truth = re.compile(regex).match(candidate) is not None
         assert pattern.matches(candidate) == truth
     print
-
 
 def main():
     """Entry point to the code for running experiments."""
@@ -90,6 +90,11 @@ def main():
     run_experiment(pattern, regex="((a|aa)+)$")
 
     # - parser extension -
+    msg = '>Regex: (a)'
+    pattern = constructPattern('(a)')
+    print_msg(message=msg)
+    run_experiment(pattern, regex="a$")
+
     msg = '>Regex: ((ab|bb)+)'
     pattern = constructPattern('((ab|bb)+)')
     print_msg(message=msg)
@@ -106,12 +111,12 @@ def main():
     run_experiment(pattern, regex="((a|aa)+)$")
 
     msg = '>Regex: ((ab|bb)*(bc))'
-    pattern = constructPattern('((ab|bb)*(bc))')
+    pattern = constructPattern('((ab|bb)*bc)')
     print_msg(message=msg)
     run_experiment(pattern, regex="((ab|bb)*bc)$")
 
     msg = '>Regex: ((ab|bb)(bc))'
-    pattern = constructPattern('((ab|bb)(bc))')
+    pattern = constructPattern('((ab|bb)bc)')
     print_msg(message=msg)
     run_experiment(pattern, regex="((ab|bb)bc)$")
 
@@ -125,10 +130,10 @@ def main():
     print_msg(message=msg)
     run_experiment(pattern, regex="((ab|bb)+bc*)$")
 
-    msg = '>Regex: ((ab|aaaaaaaaaaaaaa...x70)+(bc)*)'
-    pattern = constructPattern('(((ab)|{})+(bc)*)'.format('aaaaaaaaaaaaaa' * 70))
+    msg = '>Regex: ((ab|aaaaaaaaaaaaaa x15)+(bc)*)'
+    pattern = constructPattern('(((ab)|{})+(bc)*)'.format('aaaaaaaaaaaaaa' * 15))
     print_msg(message=msg)
-    run_experiment(pattern, regex="((ab|{})+(bc)*)$".format('aaaaaaaaaaaaaa' * 70))
+    run_experiment(pattern, regex="((ab|{})+(bc)*)$".format('aaaaaaaaaaaaaa' * 15))
 
     msg = '>Regex: (a*b+)'
     pattern = constructPattern('(a*b+)')
@@ -235,7 +240,12 @@ def constructPattern(regexString):
                                   + ('\"' if isChar else '') + ', ' + res + '])'
                 stack.append((res, False))
 
-    return eval(stack.pop()[0])
+    expression = stack.pop()
+    result = expression[0]
+    if expression[1]:
+        result = '\"' + result + '\"'
+    result = 'seq([' + result + ', eps()])'
+    return eval(result)
 
 if __name__ == '__main__':
     main()

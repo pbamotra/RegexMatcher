@@ -101,7 +101,7 @@ class State(object):
 
 		for state in epsMoves:
 			if state.isFinalState: return True
-
+			
 		return False
 
 
@@ -137,9 +137,9 @@ class State(object):
 			if curr not in visited:
 				# In the beginning, we don't include the state itself, however it
 				# maybe reachable by kleene loop
-				if not skip:
-					visited.add(curr)
-				skip = False
+				#if not skip:
+				visited.add(curr)
+				#skip = False
 				stack.extend([state for state in curr.epsilonTransitions if state not in visited])
 
 		return visited
@@ -208,18 +208,3 @@ class State(object):
 				if epsilonState.simulateNfa('', processedStates): return True
 
 		return False
-
-	def __str__(self):
-		result = str(id(self))
-		result += ' is final ' if self.isFinalState else ' not final '
-		result += 'on eps goes to ' if self.epsilonTransitions else ''
-		result += ','.join(str(id(move)) for move in self.epsilonTransitions)
-		skip = False
-		for ch in xrange(self._charRangeMax):
-			if self.charTransitions[ch]:
-				if not skip:
-					result += ', has char transitions '
-					skip = True
-				result += chr(ch) + ' goes to ' + ','.join(str(id(move)) for move in self.charTransitions[ch])
-
-		return result
